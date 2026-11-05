@@ -71,9 +71,9 @@ You can make this a running count by including an ORDER BY within the PARTITION 
 Filter the visits to dates before April 29, 2022. */
 --QUERY 4
 SELECT *,
-COUNT() OVER (PARTITION BY customer_id ORDER BY product_id ASC) AS num_purchases_per_product
+COUNT() OVER (PARTITION BY customer_id ORDER BY product_id ASC) AS purchase_count
 FROM customer_purchases
-WHERE market_date < '2024-04-29';
+WHERE market_date < '2022-04-29';
 --END QUERY
 
 
@@ -217,7 +217,12 @@ VALUES (7, 'Apple Pie', '10"', 3, 'unit', CURRENT_TIMESTAMP);
 HINT: If you don't specify a WHERE clause, you are going to have a bad time.*/
 --QUERY 11
 DELETE FROM product_units
-WHERE product_id = 7 AND snapshot_timestamp = '2026-11-04 04:30:43';
+WHERE product_id = 7 AND snapshot_timestamp = (
+	SELECT snapshot_timestamp
+	FROM product_units
+	ORDER BY snapshot_timestamp ASC
+	LIMIT 1
+	);
 --END QUERY
 
 
