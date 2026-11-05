@@ -71,7 +71,7 @@ You can make this a running count by including an ORDER BY within the PARTITION 
 Filter the visits to dates before April 29, 2022. */
 --QUERY 4
 SELECT *,
-COUNT() OVER (PARTITION BY customer_id ORDER BY product_id ASC) AS purchase_count
+COUNT() OVER (PARTITION BY customer_id, product_id ORDER BY market_date, transaction_time) AS purchase_count
 FROM customer_purchases
 WHERE market_date < '2022-04-29';
 --END QUERY
