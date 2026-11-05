@@ -62,9 +62,8 @@ The store wants to keep customer addresses. Propose two architectures for the CU
 
 **HINT:** search type 1 vs type 2 slowly changing dimensions.
 
-```
-Your answer...
-```
+Type 1 architecture would involve overwriting older address entries, meaning that each there is only one row for each customer and the table would need to be updated manually by customer_id. This customer address table would technically only need two columns: customer_id and address.
+Type 2 architecture would involve retaining changes, which can be done by adding a primary key to this table and/or including the date in which the address entry was made to differentiate between multiple addresses of the same customer. This may involve the following columns: address_id, customer_id, address, and date_updated.
 
 ---
 
