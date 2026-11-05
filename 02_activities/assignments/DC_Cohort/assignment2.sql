@@ -246,37 +246,37 @@ When you have all of these components, you can run the update statement. */
 ALTER TABLE product_units
 ADD current_quantity INT;
 
+-- Attempt 1: Creating temporary table of inventory with only the latest quantity values
+-- DROP TABLE IF EXISTS temp.latest_inventory;
+-- CREATE TABLE temp.latest_inventory AS
+-- SELECT *, MAX(market_date)
+-- FROM vendor_inventory
+-- GROUP BY product_id;
+-- -- Getting a list of just the quantity values
+-- SELECT pu.product_id, COALESCE(quantity, 0)
+-- FROM product_units pu
+-- LEFT JOIN latest_inventory li ON pu.product_id = li.product_id;
 
-SELECT * FROM product_units;
-
--- Creating temporary table of inventory with only the latest quantity values
-DROP TABLE IF EXISTS temp.latest_inventory;
-CREATE TABLE temp.latest_inventory AS
-SELECT *, MAX(market_date)
-FROM vendor_inventory
-GROUP BY product_id;
--- Getting a list of just the quantity values
-SELECT pu.product_id, COALESCE(quantity, 0)
-FROM product_units pu
-LEFT JOIN latest_inventory li ON pu.product_id = li.product_id;
-
--- UPDATE product_units
--- SET current_quantity = (
--- 	DROP TABLE IF EXISTS temp.latest_inventory;
--- 	CREATE TABLE temp.latest_inventory AS
--- 	SELECT *, MAX(market_date)
--- 	FROM vendor_inventory
--- 	GROUP BY product_id;
--- 
--- 	SELECT COALESCE(quantity, 0)
+-- Attempt 2: Combining the prompts above instead of using temporary table
+-- SELECT product_id, COALESCE(quantity, 0) FROM (
+-- 	SELECT pu.product_id, MAX(vi.market_date), vi.quantity
 -- 	FROM product_units pu
--- 	LEFT JOIN latest_inventory li ON pu.product_id = li.product_id;
+-- 	LEFT JOIN vendor_inventory vi ON pu.product_id = vi.product_id
+-- 	GROUP BY pu.product_id
 -- )
--- WHERE product_units.product_id IN (3, 4, 5, 16, 8, 7);
--- 
--- SELECT * FROM product_units;
+-- -- Attempt 3: only selecting value with matching product_id
+-- WHERE product_id = vendor_inventory.product_id;
 
+UPDATE product_units
+SET current_quantity = (
+	SELECT COALESCE(quantity, 0) FROM (
+		SELECT pu.product_id, MAX(vi.market_date), vi.quantity
+		FROM product_units pu
+		LEFT JOIN vendor_inventory vi ON pu.product_id = vi.product_id
+		GROUP BY pu.product_id
+	)
+	WHERE product_id = product_units.product_id
+);
 --END QUERY
-
 
 
